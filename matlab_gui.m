@@ -1,6 +1,7 @@
 function voltageControllerUI
     MAX_VOLTAGE = 30;  % Max voltage constant
     numChannels = 24;
+    s = '';
 
     fig = uifigure('Position', [100, 100, 700, 700], 'Name', 'Voltage Controller');
 
@@ -11,6 +12,15 @@ function voltageControllerUI
         'FontWeight', 'bold', ...
         'HorizontalAlignment', 'center', ...
         'Position', [100, 650, 500, 30]);
+
+    % Big Start Button (top right corner)
+    uibutton(fig, 'state',...
+    'Text', 'Start', ...
+    'FontSize', 18, ...
+    'FontWeight', 'bold', ...
+    'Position', [550, 610, 120, 50], ...
+    'ValueChangedFcn', @(btn, event) openNewWindow(btn));
+
 
     % Frequency input
     uilabel(fig, 'Text', 'Frequency (Hz):', 'Position', [50, 610, 100, 22], 'FontWeight', 'bold');
@@ -34,6 +44,7 @@ function voltageControllerUI
     spacing = 4;
     totalHeight = numChannels * (rowHeight + spacing);
     yStart = totalHeight - rowHeight;
+
 
     startVoltageFields = gobjects(numChannels, 1);
     endVoltageFields = gobjects(numChannels, 1);
@@ -95,13 +106,40 @@ function voltageControllerUI
     uibutton(fig, 'Text', 'Save Profile', ...
         'Position', [140, 10, 110, 30]);
 
+    allPorts = serialportlist("all");
+    ports = allPorts(startsWith(allPorts, "/dev/cu."));
+    disp(ports)  % Check if duplicates are here
+
+    if isempty(ports)
+        ports = {'No ports found'};
+    end
+    
+    portDropdown = uidropdown(fig, ...
+        'Items', ports, ...
+        'Position', [390, 90, 90, 22], ...
+        'Enable', 'on');
+
+    uibutton(fig, 'Text', 'Refresh Ports', ...
+    'Position', [490, 90, 90, 22], ...
+    'ButtonPushedFcn', @(btn, event) refreshPorts());
+
+
     % === Callback Functions ===
+
+    function refreshPorts()
+    newPorts = serialportlist("all");
+    if isempty(newPorts)
+        newPorts = {'No ports found'};
+    end
+    portDropdown.Items = newPorts;
+end
 
     function autoRead()
         if s.NumBytesAvailable > 0
-            data = readline(s);  % or read(s, s.NumBytesAvailable, "uint8")
-            disp(['Received: ', data])
-            % You can parse data here and update measuredLabels accordingly
+          data = read(s, s.NumBytesAvailable, "uint8");
+          disp("Received:");
+          disp(data);
+
         end
     end
 
@@ -138,6 +176,7 @@ function voltageControllerUI
 
             % Create packet
             packet = [170, 11, 1, i, startInt, endInt, stepsInt, 0];
+            write(s, packet, 'uint8');
 
             % Convert to hex string
             packetHex = arrayfun(@(b) sprintf('%02X', b), packet, 'UniformOutput', false);
@@ -158,13 +197,55 @@ function voltageControllerUI
         end
     end
 
-    function toggleConnect(btn)
-        if btn.Value
-            btn.Text = 'Disconnect';
-        else
+function toggleConnect(btn)
+
+    if btn.Value
+        btn.Text = 'Disconnect';
+
+        selectedPort = portDropdown.Value;
+        if strcmp(selectedPort, 'No ports found')
+            uialert(fig, 'No valid serial port selected.', 'Connection Error');
+            btn.Value = false;
+            btn.Text = 'Connect';
+            return;
+        end
+
+        try
+            s = serialport(selectedPort, 115200);
+            disp(s)
+            % Configure callback: triggers when 1 or more bytes arrive
+            configureCallback(s, "byte", 1, @readSerial);
+            flush(s);
+        catch err
+            uialert(fig, ['Failed to connect: ' err.message], 'Connection Error');
+            btn.Value = false;
             btn.Text = 'Connect';
         end
+    else
+        btn.Text = 'Connect';
+        if ~isempty(s)
+            configureCallback(s, "off");  % Disable the callback
+            clear s;
+        end
     end
+end
+
+function readSerial(src, ~)
+    bytesAvailable = src.NumBytesAvailable;
+    if bytesAvailable > 0
+        data = read(src, bytesAvailable, "uint8");
+        % Format each byte as two-digit hex
+        hexStrs = sprintf('%02X ', data);
+        disp("Received (hex):");
+        disp(hexStrs);
+
+        disp("Received (decimal):");
+        disp(data);
+    end
+end
+
+
+
 
 
     fig.CloseRequestFcn = @(~,~) cleanup();
@@ -178,6 +259,7 @@ function voltageControllerUI
         end
 
         try
+            configureCallback(s, "off");  % Disable the callback
             clear s;
         catch
             % Serial port was probably never opened
@@ -189,6 +271,87 @@ function voltageControllerUI
             % Already closed maybe
         end
     end
+
+function openNewWindow(btn)
+    persistent newFig ax barPlot timerObj voltageData
+
+    if btn.Value
+        btn.Text = 'Running';
+         startpacket = [170, 4, 2, 0];
+        write(s, startpacket, 'uint8');
+
+        try
+            if isempty(newFig) || ~isvalid(newFig)
+                newFig = uifigure('Name', 'Voltage Channels', 'Position', [200 200 700 400]);
+
+                ax = uiaxes(newFig, 'Position', [50 80 600 300]);
+                title(ax, 'Channel Voltages');
+                xlabel(ax, 'Channel Number');
+                ylabel(ax, 'Voltage (V)');
+                ax.XLim = [0.5 24.5];
+                ax.YLim = [0 30];
+                ax.XTick = 1:24;
+
+                voltageData = zeros(1, 24);
+                barPlot = bar(ax, voltageData);
+                
+                newFig.CloseRequestFcn = @(src, event) onCloseFigure(src, btn);
+
+                timerObj = timer('ExecutionMode', 'fixedSpacing', ...
+                                 'Period', 0.1, ...
+                                 'TimerFcn', @(~,~) updatePlot());
+                start(timerObj);
+            end
+        catch
+            btn.Text = 'Start';
+            btn.Value = false;
+        end
+    else
+        btn.Text = 'Start';
+        %stoppacket = [170, 4, 6, 0];
+       % write(s, stoppacket, 'uint8');
+        try
+            if isvalid(newFig)
+                close(newFig);
+                
+            end
+            if ~isempty(timerObj) && isvalid(timerObj)
+                stop(timerObj);
+                delete(timerObj);
+                timerObj = [];
+            end
+        catch
+        end
+        newFigcl = [];
+    end
+
+    function updatePlot()
+        if ~isempty(s) && s.NumBytesAvailable >= 48  % 24 channels * 2 bytes each
+            rawData = read(s, 48, "uint8");  % read 48 bytes (24 uint16 values)
+            % Convert pairs of bytes to uint16
+            voltages16 = typecast(uint8(rawData), 'uint16'); 
+            % Convert to voltage (max 0xFFFF -> 30V)
+            voltageData = double(voltages16) * 30 / 65535;
+            % Update bar plot data
+            barPlot.YData = voltageData;
+            drawnow limitrate
+        end
+    end
+end
+
+
+
+
+function onCloseFigure(fig, btn)
+    btn.Text = 'Start';
+    btn.Value = false;
+    delete(fig);
+    stoppacket = [170, 4, 8, 0];
+    write(s, stoppacket, 'uint8');
+
+
+end
+
 
 
 
@@ -210,6 +373,20 @@ function voltageControllerUI
 
 
         freqpacket = [170, 7, 8, freq3bytes, 0];
+       % disp(s)
+
+       disp("Button pressed");
+
+     % Check if 's' exists, is valid, and open
+    if ~exist('s', 'var') || isempty(s) || ~isvalid(s) || ~strcmp(s.Status, 'open')
+        errordlg('Please choose a valid serial port and connect first.', 'Serial Port Error');
+        return;
+    end
+        write(s, freqpacket, 'uint8');
+
+        disp("Sending packet...");
+
+        %write(s, freqpacket, "uint8");
 
 
         % Convert to hex string
