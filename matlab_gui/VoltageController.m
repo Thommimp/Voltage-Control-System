@@ -300,6 +300,8 @@ classdef VoltageController < handle
         end
         
         function openPlotWindow(obj, btn)
+
+
             if btn.Value
                 btn.Text = 'Running';
                 obj.startDataCollection();
@@ -318,6 +320,8 @@ classdef VoltageController < handle
             if obj.isSerialConnected()
                 startPacket = [170, 4, 2, 0];
                 write(obj.serialConnection, startPacket, 'uint8');
+                 disp("here")
+
             end
         end
         

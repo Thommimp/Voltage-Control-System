@@ -46,6 +46,7 @@ extern "C" {
 #define DAC_CS3_PIN_LOW (1 << (0 + 16));
 
 extern SPI_HandleTypeDef hspi5;
+extern SPI_HandleTypeDef hspi1;
 
 
 /* USER CODE END ET */

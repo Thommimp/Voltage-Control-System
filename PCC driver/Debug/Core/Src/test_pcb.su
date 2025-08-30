@@ -1,0 +1,2 @@
+../Core/Src/test_pcb.c:11:6:test_everything	4	static
+../Core/Src/test_pcb.c:16:6:test_dacs	16	static

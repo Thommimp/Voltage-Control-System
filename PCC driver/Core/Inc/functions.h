@@ -7,10 +7,16 @@
 
 #ifndef INC_FUNCTIONS_H_
 #define INC_FUNCTIONS_H_
+#include "main.h"
+#include "config.h"
+
 
 void set_dac_cs_pins_high();
-void write_to_dac(uint8_t dac_num, uint8_t channel, uint16_t voltage);
-uint16_t read_dac(uint8_t dac_num, uint8_t channel);
 uint16_t volts_to_dac_value(float voltage);
+void fillTestValues();
+
+void start_next_transfer();
+void write_all_dacs_super_fast();
+
 
 #endif /* INC_FUNCTIONS_H_ */

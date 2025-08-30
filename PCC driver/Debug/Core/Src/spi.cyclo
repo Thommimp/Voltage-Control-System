@@ -1,0 +1,6 @@
+../Core/Src/spi.c:21:6:spi_init_24bit	1
+../Core/Src/spi.c:27:6:transmit_spi	3
+../Core/Src/spi.c:130:6:write_to_dac	2
+../Core/Src/spi.c:164:6:write_all_dacs	7
+../Core/Src/spi.c:207:6:read_all_dacs	3
+../Core/Src/spi.c:233:10:read_dac	1

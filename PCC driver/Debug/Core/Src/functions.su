@@ -1,0 +1,5 @@
+../Core/Src/functions.c:17:6:set_dac_cs_pins_high	4	static
+../Core/Src/functions.c:24:6:transmit_dac_24bit	24	static
+../Core/Src/functions.c:70:6:transmit_spi_register	16	static
+../Core/Src/functions.c:120:6:write_all_dacs3	16	static
+../Core/Src/functions.c:141:6:fillTestValues	16	static
