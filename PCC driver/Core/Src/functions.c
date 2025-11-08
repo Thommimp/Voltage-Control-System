@@ -140,12 +140,12 @@ void write_all_dacs3() {
 
 void fillTestValues() {
     for (int i = 0; i < NUM_CHANNELS; i++) {
-        channels[i].startVoltage = 1000 + i*20;
+        channels[i].startVoltage = 40000 + i*20;
         channels[i].endVoltage = 2500;
         channels[i].steps = 100;
         channels[i].currentstep = 0;
         channels[i].step_value = 15;
-        channels[i].currentVoltage = 2000 + i * 15;
+        channels[i].currentVoltage = 0xFFFF;
         channels[i].holdEndValue = 1;
         channels[i].direction = 1;
     }

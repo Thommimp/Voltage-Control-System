@@ -1,0 +1,246 @@
+*$
+* TPS7A4701
+*****************************************************************************
+* (C) Copyright 2017 Texas Instruments Incorporated. All rights reserved.
+*****************************************************************************
+** This model is designed as an aid for customers of Texas Instruments.
+** TI and its licensors and suppliers make no warranties, either expressed
+** or implied, with respect to this model, including the warranties of
+** merchantability or fitness for a particular purpose. The model is
+** provided solely on an "as is" basis. The entire risk as to its quality
+** and performance is with the customer.
+*****************************************************************************
+*
+** Released by: WEBENCH Design Center, Texas Instruments Inc.
+* Part: TPS7A4701
+* Date: 04DEC2017
+* Model Type: Transient
+* Simulator: PSPICE
+* Simulator Version: 16.2.0.s003
+* EVM Order Number:
+* EVM Users Guide:
+* Datasheet:
+*
+* Model Version: Final 1.00
+*
+*****************************************************************************
+*
+* Updates:
+*
+* Final 1.00
+* Release to Web
+*
+*****************************************************************************
+* Model Usage Notes:
+*
+* 1. The following features have been modeled
+*      a. Start-up behaviour is modeled
+*      b. Line transients 
+*      c. Load transients
+*      d. ANY-OUT pins function.
+*      e. PSRR is modeled only till 1st pole and 1st Zero (Model limitation)
+* 2. Quiescent current, noise characteristics and temperature effects are not modeled
+*****************************************************************************
+*$
+.SUBCKT TPS7A4701_TRANS 0P1V 0P2V 0P4V 0P8V 1P6V 3P2V 6P4V1 6P4V2 EN GND NR SENSE VIN VIN_1 VOUT VOUT_1  
+E_E9         N523713 0 VALUE { V(VXX, GND) }
+R_R13         0P2V N672860  1.6MEG TC=0,0 
+V_Vload         N430503 VOUT 0Vdc
+R_R27         GND 0P4V  1G TC=0,0 
+R_R15         0P8V N672860  400k TC=0,0 
+R_R31         GND 6P4V1  1G TC=0,0 
+X_X1         ROUT 0 N702559 N431299 VYY ZX
+R_R8         EN_OK N430499  100 TC=0,0 
+R_R10         EN GND  1E6 TC=0,0 
+R_R25         GND 0P1V  1G TC=0,0 
+E_E11         V_FBK 0 VALUE { V(SENSE, GND) }
+R_R20         GND N672860  1.572MEG TC=0,0 
+R_R23         VIN_1 VIN  1m TC=0,0 
+R_R28         GND 0P8V  1G TC=0,0 
+E_E6         VOUT1 0 VALUE { V(VOUT, GND) }
+C_C4         0 N430499  1u  
+X_U1_U17         EN_INT U1_EN_IH U1_EN_HYS U1_PRE_EN_OK COMPHYS_BASIC_GEN
++  PARAMS: VDD=1 VSS=0 VTHRESH=0.5
+E_U1_E1         U1_DROP 0 TABLE { V(LOAD, 0) } 
++ ( (0.5,216m) (1,307m) )
+R_U1_R4         U1_N16777525 U1_N16777400  10 TC=0,0 
+X_U1_U16         VIN_INT U1_N16777354 U1_N16782898 VIN_OK COMPHYS_BASIC_GEN
++  PARAMS: VDD=1 VSS=0 VTHRESH=0.5
+C_U1_C2         0 U1_N16777400  1n  
+V_U1_V5         U1_EN_HYS 0 1.6
+V_U1_V6         U1_EN_IH 0 2
+X_U1_S2    U1_N16803077 0 NR GND V_INT_U1_S2 
+R_U1_R3         GND NR  1G  
+E_U1_E12         U1_N16777579 GND VALUE { V(U1_N16777592, 0) }
+E_U1_E13         U1_N16796943 0 VALUE { V(NR, GND) }
+R_U1_R5         U1_N16777579 VINT  1 TC=0,0 
+X_U1_U15         U1_PRE_EN_OK EN_OK BUF_DELAY_BASIC_GEN PARAMS: VDD=1 VSS=0
++  VTHRESH=0.5 DELAY=100n
+V_U1_V3         U1_N16782898 0 177m
+C_U1_C3         GND VINT  0.1n  
+G_U1_ABMI1         VREF NR VALUE { {IF(V(EN_OK)>0.5 & V(VIN_OK)>0.5, 76.89U,
++  0)}    }
+V_U1_V4         U1_N16777354 0 2.67
+C_U1_C5         GND NR  1n IC=0 TC=0,0 
+X_U1_U18         ENSYS U1_N16803077 INV_DELAY_BASIC_GEN PARAMS: VDD=1 VSS=0
++  VTHRESH=0.5 DELAY=0.1n
+X_U1_U11         NR VREF D_D1
+R_U1_R2         0 U1_N16777400  1G  
+E_U1_ABM5         U1_N16777592 0 VALUE { MIN(V(U1_N16777400),  
++ MAX(V(VIN_INT) -V(U1_DROP), 0))   }
+E_U1_ABM4         U1_N16777525 0 VALUE { V(U1_N16796943)  
++ * (ABS(V(VOUT1)) + 1e-6)  
++ / (ABS(V(V_FBK)) + 1e-6)  }
+E_U1_ABM10         ENSYS 0 VALUE { if( V(VIN_OK) > 0.5 & V(EN_OK) >0.5,1,0)   
++  }
+E_ABM4         VREF_INT 0 VALUE { IF(V(VIN_OK) > 0.5,V(IREF)*265500+1.2,0)    }
+C_C10         GND N430319  1n  TC=0,0 
+R_R22         0 N702559  1 TC=0,0 
+X_H2    VZZ N430233 LOAD 0 TPS7A4701_H2 
+R_R32         GND 6P4V2  1G TC=0,0 
+X_F1    N431299 VZZ N430319 VYY TPS7A4701_F1 
+E_E14         VREF GND VALUE { V(VREF_INT, 0) }
+E_E1         EN_INT 0 VALUE { V(EN, GND) }
+R_R16         1P6V N672860  200k TC=0,0 
+X_S2    N430499 0 VIN N430319 TPS7A4701_S2 
+E_E8         VIN_INT 0 VALUE { V(VIN, GND) }
+R_R17         3P2V N672860  100k TC=0,0 
+R_R12         0P1V N672860  3.2MEG TC=0,0 
+R_R1         VXX N430319  {RINP}  
+R_R29         GND 1P6V  1G TC=0,0 
+R_R24         VOUT VOUT_1  1m TC=0,0 
+R_R2         VINT VXX  {PSRR*RINP}  
+E_E10         N431153 GND VALUE { V(N448013, 0) }
+R_R18         6P4V1 N672860  50k TC=0,0 
+E_ABM1         N448013 0 VALUE { {MIN(V(N523713), (V(Vzz_INT)+(ILIM*V(ROUT))))}
++     }
+C_C1         VXX N430319  {1/(6.28*RINP*POLE)}  
+R_R6         N431153 VYY  10 TC=0,0 
+E_ABM5         ROUT 0 VALUE { 0.003*V(VREF)  
++ * (ABS(V(VOUT1)) + 1e-6)  
++ / (ABS(V(V_FBK)) + 1e-6)  }
+R_R19         6P4V2 N672860  50k TC=0,0 
+E_E7         VZZ_INT 0 VALUE { V(VZZ, GND) }
+R_R30         GND 3P2V  1G TC=0,0 
+C_C2         VXX VINT  {1/(6.28*PSRR*RINP*ZERO*1)}  
+X_S1    EN_OK 0 N430233 N430503 TPS7A4701_S1 
+E_E13         N677016 GND VALUE { IF(V(VIN_OK, 0) > 0.5,1.2,0) }
+R_R26         GND 0P2V  1G TC=0,0 
+C_C3         GND VYY  1n  
+X_H3    N677016 N672860 IREF 0 TPS7A4701_H3 
+R_R14         0P4V N672860  800k TC=0,0 
+.PARAM  psrr=100u ilim=1.26 pole=1000 zero=100k rinp=1e6
+.ENDS TPS7A4701_TRANS
+*$
+.subckt V_INT_U1_S2 1 2 3 4  
+S_U1_S2         3 4 1 2 _U1_S2
+RS_U1_S2         1 2 1G
+.MODEL         _U1_S2 VSWITCH Roff=1G Ron=1 Voff=0.2 Von=0.8
+.ends V_INT_U1_S2
+*$
+.subckt TPS7A4701_H2 1 2 3 4  
+H_H2         3 4 VH_H2 1
+VH_H2         1 2 0V
+.ends TPS7A4701_H2
+*$
+.subckt TPS7A4701_F1 1 2 3 4  
+F_F1         3 4 VF_F1 1
+VF_F1         1 2 0V
+.ends TPS7A4701_F1
+*$
+.subckt TPS7A4701_S2 1 2 3 4  
+S_S2         3 4 1 2 _S2
+RS_S2         1 2 1G
+.MODEL         _S2 VSWITCH Roff=1k Ron=1 Voff=0.2V Von=0.8V
+.ends TPS7A4701_S2
+*$
+.subckt TPS7A4701_S1 1 2 3 4  
+S_S1         3 4 1 2 _S1
+RS_S1         1 2 1G
+.MODEL         _S1 VSWITCH Roff=1E9 Ron=1m Voff=0.2 Von=1
+.ends TPS7A4701_S1
+*$
+.subckt TPS7A4701_H3 1 2 3 4  
+H_H3         3 4 VH_H3 1
+VH_H3         1 2 0V
+.ends TPS7A4701_H3
+*$
+.SUBCKT COMPHYS_BASIC_GEN INP INM HYS OUT PARAMS: VDD=1 VSS=0 VTHRESH=0.5	
+EIN INP1 INM1 INP INM 1 
+EHYS INP1 INP2 VALUE { IF( V(1) > {VTHRESH},-V(HYS),0) }
+EOUT OUT 0 VALUE { IF( V(INP2)>V(INM1), {VDD} ,{VSS}) }
+R1 OUT 1 1
+C1 1 0 5n
+RINP1 INP1 0 1K
+.ENDS COMPHYS_BASIC_GEN
+*$
+.SUBCKT D_D1 1 2
+D1 1 2 DD1
+.MODEL DD1 D( IS=1e-15 TT=10p Rs=0.05 N=.1  )
+.ENDS D_D1
+*$
+.SUBCKT BUF_DELAY_BASIC_GEN A  Y PARAMS: VDD=1 VSS=0 VTHRESH=0.5 DELAY = 10n 
+E_ABMGATE1    YINT1 0 VALUE {{IF(V(A) > {VTHRESH} , 
++ {VDD},{VSS})}}
+RINT YINT1 YINT2 1
+CINT YINT2 0 {DELAY*1.3}
+E_ABMGATE2    YINT3 0 VALUE {{IF(V(YINT2) > {VTHRESH} , 
++ {VDD},{VSS})}}
+RINT2 YINT3 Y 1
+CINT2 Y 0 1n
+.ENDS BUF_DELAY_BASIC_GEN
+*$
+.SUBCKT AND2_BASIC_GEN A B Y PARAMS: VDD=1 VSS=0 VTHRESH=0.5 
+E_ABMGATE    YINT 0 VALUE {{IF(V(A) > {VTHRESH}  &  
++ V(B) > {VTHRESH},{VDD},{VSS})}}
+RINT YINT Y 1
+CINT Y 0 1n
+.ENDS AND2_BASIC_GEN
+*$
+.SUBCKT SRLATCHRHP_BASIC_GEN S R Q QB PARAMS: VDD=1 VSS=0 VTHRESH=0.5  
+GQ 0 Qint VALUE = {IF(V(R) > {VTHRESH},-5,IF(V(S)>{VTHRESH},5, 0))} 
+CQint Qint 0 1n 
+RQint Qint 0 1000MEG 
+D_D10 Qint MY5 D_D1 
+V1 MY5 0 {VDD} 
+D_D11 MYVSS Qint D_D1 
+V2 MYVSS 0 {VSS}  
+EQ Qqq 0 Qint 0 1 
+X3 Qqq Qqqd1 BUF_BASIC_GEN PARAMS: VDD={VDD} VSS={VSS} VTHRESH={VTHRESH} 
+RQq Qqqd1 Q 1 
+EQb Qbr 0 VALUE = {IF( V(Q) > {VTHRESH}, {VSS},{VDD})} 
+RQb Qbr QB 1  
+Cdummy1 Q 0 1n  
+Cdummy2 QB 0 1n 
+.IC V(Qint) {VSS} 
+.MODEL D_D1 D( IS=1e-15 TT=10p Rs=0.05 N=.1 ) 
+.ENDS SRLATCHRHP_BASIC_GEN 
+*$
+.SUBCKT BUF_BASIC_GEN A  Y PARAMS: VDD=1 VSS=0 VTHRESH=0.5  
+E_ABMGATE    YINT 0 VALUE {{IF(V(A) > {VTHRESH} ,{VDD},{VSS})}} 
+RINT YINT Y 1 
+CINT Y 0 1n 
+.ENDS BUF_BASIC_GEN 
+*$
+.SUBCKT INV_DELAY_BASIC_GEN A  Y PARAMS: VDD=1 VSS=0 VTHRESH=0.5 DELAY = 10n  
+E_ABMGATE1    YINT1 0 VALUE {{IF(V(A) > {VTHRESH} ,{VDD},{VSS})}} 
+RINT YINT1 YINT2 1 
+CINT YINT2 0 {DELAY*1.443} 
+E_ABMGATE2    YINT3 0 VALUE {{IF(V(YINT2) > {VTHRESH} ,{VSS},{VDD})}} 
+RINT2 YINT3 Y 1 
+CINT2 Y 0 1n 
+.ENDS INV_DELAY_BASIC_GEN 
+*$
+.SUBCKT COMP_BASIC_GEN INP INM Y PARAMS: VDD=1 VSS=0 VTHRESH=0.5	
+E_ABM Yint 0 VALUE {IF (V(INP) > 
++ V(INM), {VDD},{VSS})}
+R1 Yint Y 1
+C1 Y 0 1n
+.ENDS COMP_BASIC_GEN
+*$
+.subckt zx 1 2 3 4 5
+eout   4 6 poly(2) (1,2) (3,0) 0 0 0 0 1
+fcopy  0 3 vsense 1
+rin    1 2 1G
+vsense 6 5 0
+.ends

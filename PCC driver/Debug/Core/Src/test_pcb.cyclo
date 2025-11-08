@@ -1,2 +1,3 @@
 ../Core/Src/test_pcb.c:11:6:test_everything	1
-../Core/Src/test_pcb.c:16:6:test_dacs	3
+../Core/Src/test_pcb.c:15:1:test_regulators	2
+../Core/Src/test_pcb.c:22:6:test_dacs	3

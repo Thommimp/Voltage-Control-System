@@ -29,7 +29,7 @@ void transmit_spi(uint32_t tx_data) {
     //SPI5->CR2 = (SPI5->CR2 & ~0xFFFFU) | 1;  // MODIFY_REG equivalent - set TSIZE to 1
 
     // 2. Enable SPI peripheral (HAL does this every time)
-    SPI5->CR1 |= SPI_CR1_SPE;
+    //SPI5->CR1 |= SPI_CR1_SPE;
 
     // 3. Master transfer start (only if in master mode)
     SPI5->CR1 |= SPI_CR1_CSTART;
@@ -189,7 +189,7 @@ void write_all_dacs() {
                      //       (channels[channel_index].currentVoltage & 0xFF);
             tx_data_24bit = ((uint32_t)(ch & 0x0F) << 16) | channels[channel_index].currentVoltage;
 
-            // Send all 24 bits in one go!
+            // Send all 24 bits in one go
             transmit_spi_24bit(tx_data_24bit);
             //HAL_SPI_Transmit(&hspi5, tx_array, 3, HAL_MAX_DELAY);
 
